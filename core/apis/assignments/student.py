@@ -22,10 +22,17 @@ def list_assignments(p):
 @decorators.authenticate_principal
 def upsert_assignment(p, incoming_payload):
     """Create or Edit an assignment"""
+
+    
     assignment = AssignmentSchema().load(incoming_payload)
     assignment.student_id = p.student_id
-
+    print(assignment)
     upserted_assignment = Assignment.upsert(assignment)
+
+    from core.libs.exceptions import FyleError
+    if 'content' not in incoming_payload or incoming_payload['content'] is None:
+        raise FyleError(400, "Content cannot be null.")
+
     db.session.commit()
     upserted_assignment_dump = AssignmentSchema().dump(upserted_assignment)
     return APIResponse.respond(data=upserted_assignment_dump)

@@ -46,13 +46,39 @@ def test_post_assignment_student_1(client, h_student_1):
         '/student/assignments',
         headers=h_student_1,
         json={
-            'content': content
+            'content': content,
         })
 
     assert response.status_code == 200
 
     data = response.json['data']
     assert data['content'] == content
+    assert data['state'] == 'DRAFT'
+    assert data['teacher_id'] is None
+
+def test_edit_assignment_student_1(client, h_student_1):
+    content_to_edit = 'XYZ TESTPOST'
+
+    # Getting a draft assignment to mock an actual DRAFT assignment 
+    res = client.get('/student/assignments', headers = h_student_1)
+    assignments = res.json["data"]
+    for assignment in assignments:
+        id = assignment["id"]
+        if assignment["state"] == "DRAFT":
+            break
+
+    response = client.post(
+        '/student/assignments',
+        headers=h_student_1,
+        json={
+            'content': content_to_edit,
+            'id': id
+        })
+
+    assert response.status_code == 200
+
+    data = response.json['data']
+    assert data['content'] == content_to_edit
     assert data['state'] == 'DRAFT'
     assert data['teacher_id'] is None
 
